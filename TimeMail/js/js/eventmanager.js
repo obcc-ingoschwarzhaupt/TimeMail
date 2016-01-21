@@ -1,30 +1,30 @@
-(function(global) {
-    var app = global.app = global.app || {};
-   
-    app.eventManager = (function () {
-     var eventid=0;  
-    var loadEvent = function()
+(function (global) {
+  var app = global.app = global.app || {};
+
+  app.eventManager = (function () {
+    var eventid = 0;
+    var loadEvent = function ()
     {
-      var persons     = $("#persons").val();
-      var title       = $("#Title").val();
-      var clock       = $("#Uhrzeit").val();
+      var persons = $("#persons").val();
+      var title = $("#Title").val();
+      var clock = $("#Uhrzeit").val();
       var description = $("#Beschreibung").val();
-      var priority    = $("input[name='prority']:checked").val();
-     // var event     = [title,description,priority,clock,persons];
-      
+      var priority = $("input[name='prority']:checked").val();
+      // var event     = [title,description,priority,clock,persons];
+
       console.log(monthtimestamp);
-      var obj = {title:title,description:description,persons:persons,priority:priority,clock:clock};
-      sessionStorage.setItem("event"+eventid,JSON.stringify(obj));
-     
+      var obj = {title: title, description: description, persons: persons, priority: priority, clock: clock};
+      sessionStorage.setItem("event" + eventid, JSON.stringify(obj));
+
       generateNewEvent(eventid);
-     
-       eventid++;
+
+      eventid++;
     }
 
-    var getid = function(id)
+    var getid = function (id)
     {
-      
-        $.post("php/person.php", function (data) {
+
+      $.post("php/person.php", function (data) {
 
         container = jQuery.parseJSON(data);
 
@@ -34,92 +34,112 @@
         }
         return container;
       });
-      
+
     }
-    
-      var get_events = function(date)
+
+    var get_events = function (date)
     {
       year = date.setDate(2);
       date = date.getDate();
       console.log(date);
     }
-    var loadEventsMonth = function(date)
-    {
-      console.log($events =  app.Database.getData(date));
-     
-     $.each(event,function( index ) {
-      sessionStorage.setItem("event"+eventid,JSON.stringify(obj));
-    })
+
+    var getDatabase = function (date) {
+      app.Database.getEvents(date).then(function (data) {
+        json = JSON.parse(data);        
+        $.each(json, function (index, obj) {
+          sessionStorage.setItem("event" + obj[0], JSON.stringify(obj));
+          generateExistingEvent("event"+obj[0],obj);
+        });
+      }, function (error) {
+        console.log(error);
+      });
     }
-    
-    var generateNewEvent = function(id)
+    var loadEventsMonth = function (date)
     {
-      
-     var json = sessionStorage.getItem("event"+id);
-      event = jQuery.parseJSON(json); 
-      console.log(event);
-      $("#dragged-area").append("<div class='draggable' id='event"+id+"'>"+event.title+"</div>"); 
-      $.each(event,function( index ) {
-      $( ".draggable" ).draggable({ revert: "invalid" });
-    })}
+      getDatabase(date);
+   
 
-
-  var dropped = function()
-   {
-   $( ".droppable" ).droppable({
-      activeClass: "ui-state-default",
-      hoverClass: "ui-state-hover",
-      drop: function( event, ui ) {
-        $( this )
-          .addClass( "ui-state-highlight" )
-          .find("ul")
-          .html( "<li id="+$('.draggable').attr('id')+">"+$(".draggable").html()+"</li>" );
-  
- 
-         
+    }
+   var generateExistingEvent = function (id,event)
+    {
+console.log(event);
     
-         $(".ktage").on("mousedown", function () {
-          // if()
-           console.log($(this).attr('id'));
-
+      $("#dragged-area").append("<div class='draggable' id='event" + id + "'>" + event[1] + "</div>");
+      $.each(event, function (index) {
+        $(".draggable").draggable({revert: "invalid"});
       })
+    }
+
     
-          
-           convertDivtoLi(); 
-      },
-      over: function (event, ui) {
+    var generateNewEvent = function (id)
+    {
+
+      var json = sessionStorage.getItem("event" + id);
+      event = jQuery.parseJSON(json);
+      console.log(event);
+      $("#dragged-area").append("<div class='draggable' id='event" + id + "'>" + event.title + "</div>");
+      $.each(event, function (index) {
+        $(".draggable").draggable({revert: "invalid"});
+      })
+    }
+
+
+    var dropped = function ()
+    {
+      $(".droppable").droppable({
+        activeClass: "ui-state-default",
+        hoverClass: "ui-state-hover",
+        drop: function (event, ui) {
+          $(this)
+                  .addClass("ui-state-highlight")
+                  .find("ul")
+                  .html("<li id=" + $('.draggable').attr('id') + ">" + $(".draggable").html() + "</li>");
+
+
+
+
+          $(".ktage").on("mousedown", function () {
+            // if()
+            console.log($(this).attr('id'));
+
+          })
+
+
+          convertDivtoLi();
+        },
+        over: function (event, ui) {
 
           $(this).css({"background-color": hover});
         }
-    })
-  }
-  $("#sortable").sortable();
-  
-  var convertDivtoLi = function()
-  {
-    var $ul = $("<ul>");
-    $(".pagination").children().each(function()
+      })
+    }
+    $("#sortable").sortable();
+
+    var convertDivtoLi = function ()
     {
-      var $li = $("<li>").append($(this));
-      $ul.append($li);
-    });
-    
-  
-  }
-
-    
-     	
+      var $ul = $("<ul>");
+      $(".pagination").children().each(function ()
+      {
+        var $li = $("<li>").append($(this));
+        $ul.append($li);
+      });
 
 
-       
+    }
+
+
+
+
+
+
     return {
-        loadEvent: loadEvent,
-        generate_event: generate_event,
-        dropped:dropped,
-        get_events:get_events,
-        loadEventsMonth:loadEventsMonth
+      loadEvent: loadEvent,
+      dropped: dropped,
+      get_events: get_events,
+      loadEventsMonth: loadEventsMonth
     };
-       
-    }());
+
+  }());
 })(window);
 

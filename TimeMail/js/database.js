@@ -1,33 +1,26 @@
-(function(global) {
-    var app = global.app = global.app || {};
-    
-    app.Database = (function () {
+(function (global) {
+  var app = global.app = global.app || {};
+
+  app.Database = (function () {
     var localeVar;
-        
-    var getData = function (date)
+
+    var getEvents = function (date)
     {
-       var container = false;
-       
-       /*
+      /*
        obj = {"file": obj, "id": id};
        json = JSON.stringify(obj);*/
-       postdata = {"date": date};
-       
-       $container ="false";
-       
-      $.post("php/getdata.php", { data: postdata},  function (data) {
+      postdata = {"date": date};
+      return $.ajax({
+        method: "POST",
+        url: "php/getdata.php",
+        data: {data: postdata}
+      }).promise();
+    }
 
-      container = jQuery.parseJSON(data);
-  
-      return container;
-    });
-    return container;
-  }
-        
-        return {
-           getData:getData
+    return {
+      getEvents: getEvents
 
-        };
-        
-    }());
+    };
+
+  }());
 })(window);
